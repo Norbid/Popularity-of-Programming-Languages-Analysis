@@ -1,0 +1,28 @@
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+data <- read_csv("stack_overflow_data.csv")
+
+#Has R been growing or shrinking over time?
+data1 <- data %>% filter(tag == "r")
+r_over_time <- data1 %>% mutate(fraction = num_questions/year_total*100)
+r_over_time
+ggplot(r_over_time, aes(fraction, year)) + geom_line()
+
+#What fraction of the total number of questions asked in 2020 had the R tag?
+data2 <- data %>% filter(year == 2020 & tag == 'r')
+r_percentage <- data2 %>% summarise(num_questions/year_total*100)
+r_percentage <- as.numeric(r_percentage)
+r_percentage
+
+#What were the five most asked-about tags between 2015-2020?
+data3 <- data %>% filter(year >= 2015)
+highest_tagss <- data3 %>% group_by(tag) %>% arrange(desc(num_questions))
+highest_tags <- unique(highest_tagss$tag)
+head(highest_tags, n = 5)
+
+#Which tag experienced the largest year-over-year increase in its fraction of questions?
+highest_ratio_tagg <- data %>% group_by(tag) %>% mutate(fractions = num_questions/year_total) %>% arrange(tag, year) %>% mutate(lag = lag(fractions)) %>% mutate(diff = fractions/lag) %>% arrange(desc(diff)) %>% head(n = 1)
+highest_ratio_tag <- highest_ratio_tagg$tag
+highest_ratio_tag
